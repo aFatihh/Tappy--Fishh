@@ -23,7 +23,8 @@ public class LeftMovement : MonoBehaviour
         }
 
     }
-
+     
+    // asdfasdfasdfasdf
     
     void Update()
     {

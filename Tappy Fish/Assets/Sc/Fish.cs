@@ -11,24 +11,27 @@ public class Fish : MonoBehaviour
     int minAngel = -60;
     public Score score;
     public GameManager gameManager;
+    public ObstacleSpawner obstacleSpawner;
     public Sprite fishDead;
     SpriteRenderer sp;
     Animator anim;
+    [SerializeField] private AudioSource swim, hit, point;
 
     bool touchedGround;
 
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _rb.gravityScale = 0;
         sp = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
     }
 
-   
+
     void Update()
     {
         FishSwim();
-        
+
     }
 
     private void FixedUpdate()
@@ -40,6 +43,16 @@ public class Fish : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0) && GameManager.gameOver == false)
         {
+            swim.Play();
+            if (GameManager.gameStarted == false)
+            {
+                _rb.gravityScale = 5f;
+                _rb.velocity = Vector2.zero;
+                _rb.velocity = new Vector2(_rb.velocity.x, speed);
+                obstacleSpawner.InstantiateObstacle();
+                gameManager.GameHasStarted();
+            }
+
             _rb.velocity = Vector2.zero;
             _rb.velocity = new Vector2(_rb.velocity.x, speed);
         }
@@ -68,7 +81,7 @@ public class Fish : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, 0, angle);
         }
 
-        
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -76,11 +89,18 @@ public class Fish : MonoBehaviour
         if (collision.CompareTag("Obstacle"))
         {
             score.Scored();
+            point.Play();
         }
-        else if (collision.CompareTag("Column"))
+        else if (collision.CompareTag("Column") && GameManager.gameOver == false)
         {
-            // game over
+            FishDiesEffect();
+            gameManager.GameOver();
         }
+    }
+
+    void FishDiesEffect()
+    {
+        hit.Play();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -90,6 +110,7 @@ public class Fish : MonoBehaviour
             if (GameManager.gameOver == false)
             {
                 // game over
+                FishDiesEffect();
                 gameManager.GameOver();
                 GameOver();
             }
